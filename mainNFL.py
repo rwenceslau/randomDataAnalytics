@@ -24,6 +24,7 @@ ne_completed_passes = ne_pass_plays[ne_pass_plays.PassOutcome == 'Complete']
 
 # Only Brady's completions.
 ne_brady_completed = ne_completed_passes[ne_completed_passes.Passer == 'T.Brady']
+total_completed = len(ne_brady_completed)
 
 # Where those completions happened.
 completed_area = ne_brady_completed['yrdline100']
@@ -47,12 +48,17 @@ for entry in completed_area:
 		red_zone.append(entry)
 
 # Print the results.
-print 'OWN 1 - OWN 25: {}'.format(len(danger_zone))
-print 'OWN 26 - 50: {}'.format(len(neutral_zone_back))
-print 'OPP 49 - OPP 25: {}'.format(len(neutral_zone_front))
-print 'OPP 24 - OPP 1: {}'.format(len(red_zone))
+print 'OWN 1 - OWN 25: {} -- ({})'.format(len(danger_zone), len(danger_zone) / float(total_completed))
+print 'OWN 26 - 50: {} -- ({})'.format(len(neutral_zone_back), len(neutral_zone_back) / float(total_completed))
+print 'OPP 49 - OPP 25: -- {} ({})'.format(len(neutral_zone_front), len(neutral_zone_front) / float(total_completed))
+print 'OPP 24 - OPP 1: {} -- ({})'.format(len(red_zone), len(red_zone) / float(total_completed))
 brady_tds = ne_completed_passes[ne_completed_passes.Touchdown == 1]
-print 'OPP ENDZONE {}'.format(len(brady_tds))
+
+# Getting rid of TDs reversed by replay challenges
+final_td_count = brady_tds[brady_tds.ChalReplayResult != 'Reversed']
+
+print 'OPP ENDZONE {} -- ({})'.format(len(final_td_count), len(final_td_count) / float(total_completed))
+
 #print len(ne_brady_completed)
 
 # print ne_passPlays.corr()
