@@ -1,4 +1,9 @@
+import numpy as np # linear algebra
 import pandas as pd
+# Random Forests are good here because very small amount of data
+from sklearn.ensemble import RandomForestClassifier 
+from sklearn.cross_validation import train_test_split # split data
+import seaborn as sns; # plotting
 
 #--- SETUP ---#
 pd.set_option('display.max_columns', None)
@@ -53,3 +58,24 @@ brady_tds = ne_completed_passes[ne_completed_passes.Touchdown == 1]
 final_td_count = brady_tds[brady_tds.ChalReplayResult != 'Reversed']
 
 print 'OPP ENDZONE {} -- ({})'.format(len(final_td_count), len(final_td_count) / float(total_completed))
+
+#print len(ne_brady_completed)
+
+# print ne_passPlays.corr()
+# print len(ne_passPlays)
+# model = ne_validPlays[['down', 'ydstogo', 'TimeSecs', 'PosTeamScore', 'DefTeamScore', 'yrdline100']]
+# target = ne_validPlays['yrdline100']
+
+# X, test = train_test_split(model, test_size = 0.2)
+# Y = X.pop('yrdline100')
+# test_y = test.pop('yrdline100')
+
+# clf = RandomForestClassifier(n_estimators=1000)
+# clf.fit(X,Y)
+
+# print clf.score(test,test_y)
+# x = clf.feature_importances_
+# y = X.columns
+
+# print x
+# print y 
