@@ -3,7 +3,10 @@ import pandas as pd
 # Random Forests are good here because very small amount of data
 from sklearn.ensemble import RandomForestClassifier 
 from sklearn.cross_validation import train_test_split # split data
-import seaborn as sns; # plotting
+from sklearn.metrics import f1_score
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import roc_auc_score
+import operator
 
 #--- SETUP ---#
 pd.set_option('display.max_columns', None)
@@ -11,54 +14,49 @@ pd.set_option('display.max_columns', None)
 
 # Reading Kaggle's NFL Play-by-Play Season 2015 dataset.
 dataset = pd.read_csv("data/nflplaybyplay2015.csv", low_memory=False)
+dataset = dataset.fillna(method='ffill')
+#print dataset.columns.values
+validPlays = ['Pass', 'Run', 'Sack', 'Field Goal', 'Punt']
+potentialPlays = dataset[dataset.PlayType.isin(validPlays)]
+#print potentialPlays.corr()
 
-# Filtering by team
-ne_plays = dataset[dataset.posteam == 'NE']
-#print ne_plays.corr()
+predFeatures = potentialPlays[['qtr', 'down', 'TimeUnder','ydstogo', 'PassAttempt', 'RushAttempt',
+							 'Reception', 'Sack', 'PosTeamScore', 'DefTeamScore', 'ScoreDiff', 'AbsScoreDiff', 'Fumble']]
 
-# Filtering by play type.
-ne_pass_plays = ne_plays[ne_plays.PlayType == 'Pass']
 
-# Filtering by completed passes.
-ne_completed_passes = ne_pass_plays[ne_pass_plays.PassOutcome == 'Complete']
+# Splitting 
+X, test = train_test_split(predFeatures, test_size = 0.5)
 
-# Only Brady's completions.
-ne_brady_completed = ne_completed_passes[ne_completed_passes.Passer == 'T.Brady']
-total_completed = len(ne_brady_completed)
+y = X.pop('Fumble')
+test_y = test.pop('Fumble')
 
-# Where those completions happened.
-completed_area = ne_brady_completed['yrdline100']
-#print completed_area
 
-# Splits the field into 4 different zones (5 including the opponent Endzone)
-danger_zone = []
-neutral_zone_back = []
-neutral_zone_front = []
-red_zone = []
+#print np.isnan(predFeatures).any()
+#predFeatures[np.isnan(predFeatures.down)] = np.median(predFeatures[~np.isnan(predFeatures)])
 
-# I could just count it, but it's interesting to know exactly where that completion occurred.
-for entry in completed_area:
-	if entry < 25.0:
-		danger_zone.append(entry)
-	if entry >= 25.0 and entry <= 50.0:
-		neutral_zone_back.append(entry)
-	if entry > 50.0 and entry <= 75.0:
-		neutral_zone_front.append(entry)
-	if entry > 75.0 and entry < 100.0:
-		red_zone.append(entry)
+clf = RandomForestClassifier(n_estimators=800)
+clf.fit(X,y)
+fumble_prediction = clf.predict(test)
+print f1_score(test_y, fumble_prediction)
 
-# Print the results.
-print 'OWN 1 - OWN 25: {} -- ({})'.format(len(danger_zone), len(danger_zone) / float(total_completed))
-print 'OWN 26 - 50: {} -- ({})'.format(len(neutral_zone_back), len(neutral_zone_back) / float(total_completed))
-print 'OPP 49 - OPP 25: -- {} ({})'.format(len(neutral_zone_front), len(neutral_zone_front) / float(total_completed))
-print 'OPP 24 - OPP 1: {} -- ({})'.format(len(red_zone), len(red_zone) / float(total_completed))
-brady_tds = ne_completed_passes[ne_completed_passes.Touchdown == 1]
+#print clf.decision_path(X)
+print clf.score(test,test_y)
+print roc_auc_score(test_y, fumble_prediction)
+print confusion_matrix(test_y, fumble_prediction)
 
-# Getting rid of TDs reversed by replay challenges
-final_td_count = brady_tds[brady_tds.ChalReplayResult != 'Reversed']
+#print y
+#print test_y
 
-print 'OPP ENDZONE {} -- ({})'.format(len(final_td_count), len(final_td_count) / float(total_completed))
 
+list_of_features = {}
+for feature, importance in enumerate(zip(clf.feature_importances_, X.columns)):
+	#print feature, importance
+	list_of_features[feature] = importance
+
+sorted_by_importance = sorted(list_of_features.items(), key=operator.itemgetter(1), reverse = True)
+
+for feature in sorted_by_importance:
+	print feature 
 #print len(ne_brady_completed)
 
 # print ne_passPlays.corr()
