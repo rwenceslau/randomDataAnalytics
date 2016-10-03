@@ -37,4 +37,4 @@ f1: 0.0294117647059
 acc: 0.981697171381
 auc-roc: 0.507379275654
 
-Analysis: This model got low f1 score, but it suggests that 'TimeUnder', yards to go and the difference between scores are important factors that can lead to fumble the ball last season.
+Analysis: This model got low f1 score, but it suggests that the time left in the quarter, yards to go and the difference between scores are the most important factors that can lead to fumble the ball last season.
