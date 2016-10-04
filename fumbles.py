@@ -21,11 +21,12 @@ potentialPlays = dataset[dataset.PlayType.isin(validPlays)]
 #print potentialPlays.corr()
 
 predFeatures = potentialPlays[['qtr', 'down', 'TimeUnder','ydstogo', 'PassAttempt', 'RushAttempt',
-							 'Reception', 'Sack', 'PosTeamScore', 'DefTeamScore', 'ScoreDiff', 'AbsScoreDiff', 'Fumble']]
+							  'Sack', 'ScoreDiff', 'AbsScoreDiff', 'Fumble']]
 
+#print predFeatures.corr()
 
-# Splitting 
-X, test = train_test_split(predFeatures, test_size = 0.5)
+# Splitting training and testing.
+X, test = train_test_split(predFeatures, test_size = 0.2)
 
 y = X.pop('Fumble')
 test_y = test.pop('Fumble')
@@ -37,10 +38,10 @@ test_y = test.pop('Fumble')
 clf = RandomForestClassifier(n_estimators=800)
 clf.fit(X,y)
 fumble_prediction = clf.predict(test)
-print f1_score(test_y, fumble_prediction)
 
-#print clf.decision_path(X)
+# Printing metrics
 print clf.score(test,test_y)
+print f1_score(test_y, fumble_prediction)
 print roc_auc_score(test_y, fumble_prediction)
 print confusion_matrix(test_y, fumble_prediction)
 
